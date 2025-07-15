@@ -91,23 +91,14 @@ elif slide == 5:
                            labels={"Glob": "기온 이상치(°C)"})
     st.plotly_chart(fig_trend, use_container_width=True)
 
-# ✅ 6. 결론 및 시사점
+# ✅ 6. (위치 변경됨) 미래 기온 이상치 예측
 elif slide == 6:
-    st.header("🚨 결론 및 시사점")
-    st.error("✅ 지구는 뚜렷한 온난화 추세에 있습니다.\n"
-             "✅ 북반구·극지방에서 온난화 속도가 특히 빠릅니다.\n"
-             "✅ 최근 50년간 온난화 속도가 더욱 가팔라졌습니다.")
-    st.success("🌱 **지속 가능한 미래를 위해 온실가스 감축과 기후 대응이 시급합니다.**")
-
-# ✅ 7. 미래 기온 이상치 예측 (IPCC AR6 기반)
-elif slide == 7:
     st.header("📈 미래 기온 이상치 예측 (IPCC AR6 기반)")
     st.markdown("""
     **출처**: [IPCC AR6, WGI, Summary for Policymakers (2021)](https://www.ipcc.ch/report/ar6/wg1/)  
     기준: 1850~1900년 평균 대비 전 지구 평균 지표 온도(GSAT) 상승치
     """)
     
-    # --- IPCC AR6 예측 데이터프레임 생성 ---
     future_data = {
         "시나리오": ["SSP1-1.9", "SSP1-2.6", "SSP2-4.5", "SSP3-7.0", "SSP5-8.5"],
         "단기(2021-2040)": [1.5, 1.5, 1.5, 1.5, 1.6],
@@ -115,13 +106,10 @@ elif slide == 7:
         "장기(2081-2100)": [1.4, 1.8, 2.7, 3.6, 4.4]
     }
     df_future = pd.DataFrame(future_data)
-
-    # --- 시각화를 위해 melt 변환 ---
     df_melt = df_future.melt(id_vars="시나리오", 
                              var_name="기간", 
                              value_name="기온 이상치(°C)")
 
-    # --- Plotly Bar Chart ---
     fig_future = px.bar(
         df_melt, x="시나리오", y="기온 이상치(°C)", color="기간",
         barmode="group",
@@ -130,9 +118,16 @@ elif slide == 7:
     )
     st.plotly_chart(fig_future, use_container_width=True)
 
-    # --- 요약 메시지 ---
     st.warning("""
     🔹 **배출량 억제(SSP1)** → 1.4~1.8°C 수준에서 안정화 가능  
     🔹 **중간 배출(SSP2-4.5)** → 21세기 말 2.7°C 상승 예상  
     🔹 **고배출(SSP5-8.5)** → 최대 4.4°C 이상 상승 전망 → 극단적 기상현상, 해수면 상승 위험 가중
     """)
+
+# ✅ 7. (위치 변경됨) 결론 및 시사점
+elif slide == 7:
+    st.header("🚨 결론 및 시사점")
+    st.error("✅ 지구는 뚜렷한 온난화 추세에 있습니다.\n"
+             "✅ 북반구·극지방에서 온난화 속도가 특히 빠릅니다.\n"
+             "✅ 최근 50년간 온난화 속도가 더욱 가팔라졌습니다.")
+    st.success("🌱 **지속 가능한 미래를 위해 온실가스 감축과 기후 대응이 시급합니다.**")
