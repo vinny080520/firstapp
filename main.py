@@ -1,3 +1,17 @@
+# ✅ 1. 데이터 개요 (발표자 이름 추가)
+if slide == 1:
+    st.header("✅ 데이터 개요")
+    st.subheader("발표자: 20716 신종민, 21133 황승빈")  # 👉 이름 추가 (원하시면 변경 가능)
+    st.caption("지속 가능한 발전을 위한 팀 프로젝트 발표 자료")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("데이터 기간", f"{df['Year'].min()} ~ {df['Year'].max()}")
+    with col2:
+        st.metric("총 관측 연도", f"{len(df)}년")
+    st.caption("출처: NASA GISS Surface Temperature Analysis (GISTEMP)")
+    st.success("이 데이터는 전 지구 기온 이상치 변화를 보여줍니다.")
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -7,7 +21,7 @@ import plotly.graph_objects as go
 # 1. 페이지 설정 및 데이터 불러오기
 # -----------------------------
 st.set_page_config(page_title="기온 이상치 발표 슬라이드", layout="wide")
-st.title("🌍 지구 온난화: 기온 이상치 발표 자료")
+st.title("🌍 지구 온난화: 기온 이상치")
 
 @st.cache_data
 def load_data():
