@@ -1,17 +1,3 @@
-# ✅ 1. 데이터 개요 (발표자 이름 추가)
-if slide == 1:
-    st.header("✅ 데이터 개요")
-    st.subheader("발표자: 20716 신종민, 21133 황승빈")  # 👉 이름 추가 (원하시면 변경 가능)
-    st.caption("지속 가능한 발전을 위한 팀 프로젝트 발표 자료")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("데이터 기간", f"{df['Year'].min()} ~ {df['Year'].max()}")
-    with col2:
-        st.metric("총 관측 연도", f"{len(df)}년")
-    st.caption("출처: NASA GISS Surface Temperature Analysis (GISTEMP)")
-    st.success("이 데이터는 전 지구 기온 이상치 변화를 보여줍니다.")
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -21,7 +7,7 @@ import plotly.graph_objects as go
 # 1. 페이지 설정 및 데이터 불러오기
 # -----------------------------
 st.set_page_config(page_title="기온 이상치 발표 슬라이드", layout="wide")
-st.title("🌍 지구 온난화: 기온 이상치")
+st.title("🌍 지구 온난화: 기온 이상치 발표 자료")
 
 @st.cache_data
 def load_data():
@@ -39,9 +25,12 @@ st.markdown(f"### ▶️ 현재 슬라이드: **{slide}/7**")
 # 3. 슬라이드별 내용
 # -----------------------------
 
-# ✅ 1. 데이터 개요
+# ✅ 1. 데이터 개요 + 발표자 소개
 if slide == 1:
     st.header("✅ 데이터 개요")
+    st.subheader("발표자: 드럼텅")
+    st.caption("지속 가능한 발전을 위한 팀 프로젝트 발표 (2025년 7월 15일)")
+    
     col1, col2 = st.columns(2)
     with col1:
         st.metric("데이터 기간", f"{df['Year'].min()} ~ {df['Year'].max()}")
@@ -105,11 +94,11 @@ elif slide == 5:
                            labels={"Glob": "기온 이상치(°C)"})
     st.plotly_chart(fig_trend, use_container_width=True)
 
-# ✅ 6. (위치 변경됨) 미래 기온 이상치 예측
+# ✅ 6. 미래 기온 이상치 예측 (IPCC AR6 기반)
 elif slide == 6:
     st.header("📈 미래 기온 이상치 예측 (IPCC AR6 기반)")
     st.markdown("""
-    **출처**: [IPCC AR6, WGI, Summary for Policymakers (2021)](https://www.ipcc.ch/report/ar6/wg1/)  
+    **출처**: [IPCC AR6, WGI, Summary for Policymakers (2021)](https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_SPM.pdf)  
     기준: 1850~1900년 평균 대비 전 지구 평균 지표 온도(GSAT) 상승치
     """)
     
@@ -138,7 +127,7 @@ elif slide == 6:
     🔹 **고배출(SSP5-8.5)** → 최대 4.4°C 이상 상승 전망 → 극단적 기상현상, 해수면 상승 위험 가중
     """)
 
-# ✅ 7. (위치 변경됨) 결론 및 시사점
+# ✅ 7. 결론 및 시사점
 elif slide == 7:
     st.header("🚨 결론 및 시사점")
     st.error("✅ 지구는 뚜렷한 온난화 추세에 있습니다.\n"
