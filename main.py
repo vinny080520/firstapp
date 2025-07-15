@@ -28,8 +28,7 @@ st.markdown(f"### ▶️ 현재 슬라이드: **{slide}/7**")
 # ✅ 1. 데이터 개요 + 발표자 소개
 if slide == 1:
     st.header("✅ 데이터 개요")
-    st.subheader("발표자: 드럼텅")
-    st.caption("지속 가능한 발전을 위한 팀 프로젝트 발표 (2025년 7월 15일)")
+    st.subheader("20716 신종민, 21133 황승빈")
     
     col1, col2 = st.columns(2)
     with col1:
