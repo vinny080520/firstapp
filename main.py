@@ -4,35 +4,37 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # -----------------------------
-# 1. 데이터 불러오기
+# 1. 페이지 설정 및 데이터 불러오기
 # -----------------------------
-st.set_page_config(page_title="기온 이상치 데이터 분석", layout="wide")
-st.title("🌍 기온 이상치 데이터 분석 (zonann_temps)")
+st.set_page_config(page_title="기온 이상치 발표 자료", layout="wide")
+st.title("🌍 지구 온난화: 기온 이상치 데이터 분석")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("zonann_temps.csv")
-    return df
+    return pd.read_csv("zonann_temps.csv")
 
 df = load_data()
 
-st.subheader("📌 데이터 미리보기")
-st.dataframe(df.head())
+st.caption("출처: NASA GISS Surface Temperature Analysis (GISTEMP)")
 
 # -----------------------------
-# 2. 기본 통계 및 결측치 점검
+# 2. 데이터 간단 소개
 # -----------------------------
-st.subheader("📊 기본 통계 요약")
-st.write(df.describe())
+st.subheader("✅ 데이터 개요")
+col1, col2 = st.columns(2)
+with col1:
+    st.metric("데이터 기간", f"{df['Year'].min()} ~ {df['Year'].max()}")
+with col2:
+    st.metric("총 관측 연도", f"{len(df)}년")
 
-st.subheader("❗ 결측치 점검")
-missing = df.isnull().sum()
-st.write(missing[missing > 0] if missing.sum() > 0 else "✅ 결측치 없음")
+st.caption("온난화 추세 분석을 위해 전 지구 평균 기온 이상치를 활용합니다.")
 
 # -----------------------------
-# 3. 연도별 전 지구 평균 기온 변화 (글로벌 트렌드)
+# 3. 전 지구 평균 기온 변화
 # -----------------------------
-st.subheader("🌡️ 연도별 전 지구 평균 기온 이상치 (Glob)")
+st.subheader("🌡️ 전 지구 평균 기온 이상치 변화")
+st.markdown("**지구 기온은 최근 100년 동안 꾸준히 상승하는 추세를 보이고 있습니다.**")
+
 fig_glob = px.line(df, x="Year", y="Glob",
                    title="연도별 전 지구 기온 이상치 변화",
                    labels={"Year": "연도", "Glob": "기온 이상치(°C)"},
@@ -42,7 +44,9 @@ st.plotly_chart(fig_glob, use_container_width=True)
 # -----------------------------
 # 4. 북반구 vs 남반구 비교
 # -----------------------------
-st.subheader("🌎 북반구 vs 남반구 기온 이상치 비교")
+st.subheader("🌎 북반구 vs 남반구 온난화 속도 비교")
+st.markdown("**북반구가 남반구보다 더 빠른 온난화 경향을 보입니다.**")
+
 fig_hemi = go.Figure()
 fig_hemi.add_trace(go.Scatter(x=df["Year"], y=df["NHem"], mode="lines", name="북반구 (NHem)", line=dict(color="red")))
 fig_hemi.add_trace(go.Scatter(x=df["Year"], y=df["SHem"], mode="lines", name="남반구 (SHem)", line=dict(color="blue")))
@@ -50,11 +54,14 @@ fig_hemi.update_layout(title="북반구 vs 남반구 기온 이상치 변화", x
 st.plotly_chart(fig_hemi, use_container_width=True)
 
 # -----------------------------
-# 5. 위도대별 기온 변화 트렌드 선택
+# 5. 위도대별 기온 변화
 # -----------------------------
-st.subheader("🗺️ 위도대별 기온 이상치 트렌드")
+st.subheader("🗺️ 위도대별 기온 이상치")
+st.markdown("**고위도 지역(북극·남극)에서 온난화가 특히 빠르게 진행됩니다.**")
+
 lat_columns = [col for col in df.columns if col != "Year"]
-selected_lats = st.multiselect("위도대를 선택하세요 (여러 개 가능)", lat_columns, default=["64N-90N", "24S-24N", "90S-64S"])
+selected_lats = st.multiselect("위도대를 선택하세요 (여러 개 가능)",
+                               lat_columns, default=["64N-90N", "24S-24N", "90S-64S"])
 
 if selected_lats:
     fig_lat = px.line(df, x="Year", y=selected_lats,
@@ -64,18 +71,26 @@ if selected_lats:
     st.plotly_chart(fig_lat, use_container_width=True)
 
 # -----------------------------
-# 6. 온난화 속도 분석 (최근 50년 기울기)
+# 6. 최근 50년 온난화 속도
 # -----------------------------
-st.subheader("🔥 최근 50년 온난화 속도 분석")
-
-recent_df = df[df["Year"] >= df["Year"].max() - 50]  # 최근 50년
-trend = recent_df[["Year", "Glob"]].copy()
+st.subheader("🔥 최근 50년 온난화 속도")
+recent_df = df[df["Year"] >= df["Year"].max() - 50]
+trend = recent_df[["Year", "Glob"]]
 slope = (trend["Glob"].iloc[-1] - trend["Glob"].iloc[0]) / (trend["Year"].iloc[-1] - trend["Year"].iloc[0])
-st.write(f"**최근 50년간 전 지구 기온 상승 속도: {slope:.3f} °C/년 → 약 {slope*10:.2f} °C/10년**")
+
+col1, col2 = st.columns([1, 3])
+with col1:
+    st.metric("최근 50년 온난화 속도", f"{slope*10:.2f} °C / 10년", delta=f"{slope:.3f} °C / 년")
+
+with col2:
+    st.markdown("**최근 50년간 기온이 지속적으로 상승하며, 인류 활동이 온난화 가속의 주요 요인으로 지목됩니다.**")
 
 fig_trend = px.scatter(trend, x="Year", y="Glob", trendline="ols",
                        title="최근 50년 전 지구 온난화 추세 (회귀선 포함)",
                        labels={"Glob": "기온 이상치(°C)"})
 st.plotly_chart(fig_trend, use_container_width=True)
 
-st.info("✅ 이 앱은 CSV 데이터를 자동으로 분석하며, 필터와 시각화를 제공합니다.")
+# -----------------------------
+# 7. 발표용 마무리 메시지
+# -----------------------------
+st.success("지속 가능한 미래를 위해 온실가스 감축과 기후 대응이 시급합니다.")
