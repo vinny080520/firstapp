@@ -1,35 +1,81 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
-# MBTI에 따른 추천 직업 목록
-mbti_jobs = {
-    "INTJ": ["전략 컨설턴트", "데이터 과학자", "정책 분석가"],
-    "INTP": ["연구 과학자", "소프트웨어 엔지니어", "이론 물리학자"],
-    "ENTJ": ["경영 컨설턴트", "CEO", "프로젝트 매니저"],
-    "ENTP": ["스타트업 창업가", "마케팅 기획자", "기술 혁신가"],
-    "INFJ": ["상담사", "작가", "사회 운동가"],
-    "INFP": ["예술가", "심리상담사", "소설가"],
-    "ENFJ": ["교육자", "HR 매니저", "공공 리더"],
-    "ENFP": ["콘텐츠 크리에이터", "기획자", "광고 전문가"],
-    "ISTJ": ["회계사", "관리자", "공무원"],
-    "ISFJ": ["간호사", "초등 교사", "행정 직원"],
-    "ESTJ": ["군 장교", "경영 관리자", "현장 감독"],
-    "ESFJ": ["간호 관리자", "상담 교사", "행정 간부"],
-    "ISTP": ["기계 엔지니어", "파일럿", "응급 구조사"],
-    "ISFP": ["디자이너", "셰프", "플로리스트"],
-    "ESTP": ["영업 전문가", "기업 트레이너", "운동 코치"],
-    "ESFP": ["MC/방송인", "이벤트 플래너", "배우"]
-}
+# -----------------------------
+# 1. 데이터 불러오기
+# -----------------------------
+st.set_page_config(page_title="기온 이상치 데이터 분석", layout="wide")
+st.title("🌍 기온 이상치 데이터 분석 (zonann_temps)")
 
-# 웹앱 UI
-st.set_page_config(page_title="MBTI 직업 추천기", page_icon="🧠")
-st.title("🧠 MBTI 직업 추천기")
-st.write("MBTI 성격유형을 선택하면, 어울리는 직업 3가지를 추천해드립니다.")
+@st.cache_data
+def load_data():
+    df = pd.read_csv("zonann_temps.csv")
+    return df
 
-# 사용자 입력: MBTI 선택
-selected_mbti = st.selectbox("당신의 MBTI는 무엇인가요?", sorted(mbti_jobs.keys()))
+df = load_data()
 
-# 결과 출력
-if selected_mbti:
-    st.subheader(f"✅ {selected_mbti} 유형에게 어울리는 직업")
-    for i, job in enumerate(mbti_jobs[selected_mbti], start=1):
-        st.write(f"{i}. {job}")
+st.subheader("📌 데이터 미리보기")
+st.dataframe(df.head())
+
+# -----------------------------
+# 2. 기본 통계 및 결측치 점검
+# -----------------------------
+st.subheader("📊 기본 통계 요약")
+st.write(df.describe())
+
+st.subheader("❗ 결측치 점검")
+missing = df.isnull().sum()
+st.write(missing[missing > 0] if missing.sum() > 0 else "✅ 결측치 없음")
+
+# -----------------------------
+# 3. 연도별 전 지구 평균 기온 변화 (글로벌 트렌드)
+# -----------------------------
+st.subheader("🌡️ 연도별 전 지구 평균 기온 이상치 (Glob)")
+fig_glob = px.line(df, x="Year", y="Glob",
+                   title="연도별 전 지구 기온 이상치 변화",
+                   labels={"Year": "연도", "Glob": "기온 이상치(°C)"},
+                   markers=True)
+st.plotly_chart(fig_glob, use_container_width=True)
+
+# -----------------------------
+# 4. 북반구 vs 남반구 비교
+# -----------------------------
+st.subheader("🌎 북반구 vs 남반구 기온 이상치 비교")
+fig_hemi = go.Figure()
+fig_hemi.add_trace(go.Scatter(x=df["Year"], y=df["NHem"], mode="lines", name="북반구 (NHem)", line=dict(color="red")))
+fig_hemi.add_trace(go.Scatter(x=df["Year"], y=df["SHem"], mode="lines", name="남반구 (SHem)", line=dict(color="blue")))
+fig_hemi.update_layout(title="북반구 vs 남반구 기온 이상치 변화", xaxis_title="연도", yaxis_title="기온 이상치(°C)")
+st.plotly_chart(fig_hemi, use_container_width=True)
+
+# -----------------------------
+# 5. 위도대별 기온 변화 트렌드 선택
+# -----------------------------
+st.subheader("🗺️ 위도대별 기온 이상치 트렌드")
+lat_columns = [col for col in df.columns if col != "Year"]
+selected_lats = st.multiselect("위도대를 선택하세요 (여러 개 가능)", lat_columns, default=["64N-90N", "24S-24N", "90S-64S"])
+
+if selected_lats:
+    fig_lat = px.line(df, x="Year", y=selected_lats,
+                      title="선택한 위도대별 기온 이상치 변화",
+                      labels={"value": "기온 이상치(°C)", "variable": "위도대"},
+                      markers=True)
+    st.plotly_chart(fig_lat, use_container_width=True)
+
+# -----------------------------
+# 6. 온난화 속도 분석 (최근 50년 기울기)
+# -----------------------------
+st.subheader("🔥 최근 50년 온난화 속도 분석")
+
+recent_df = df[df["Year"] >= df["Year"].max() - 50]  # 최근 50년
+trend = recent_df[["Year", "Glob"]].copy()
+slope = (trend["Glob"].iloc[-1] - trend["Glob"].iloc[0]) / (trend["Year"].iloc[-1] - trend["Year"].iloc[0])
+st.write(f"**최근 50년간 전 지구 기온 상승 속도: {slope:.3f} °C/년 → 약 {slope*10:.2f} °C/10년**")
+
+fig_trend = px.scatter(trend, x="Year", y="Glob", trendline="ols",
+                       title="최근 50년 전 지구 온난화 추세 (회귀선 포함)",
+                       labels={"Glob": "기온 이상치(°C)"})
+st.plotly_chart(fig_trend, use_container_width=True)
+
+st.info("✅ 이 앱은 CSV 데이터를 자동으로 분석하며, 필터와 시각화를 제공합니다.")
